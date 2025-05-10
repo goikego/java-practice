@@ -59,10 +59,4 @@ public class CalculatorTest {
 
         assertThrows(ArithmeticException.class, () -> calculator.divide(5, 0));
     }
-
-    @Test
-    void testFailingCase() {
-        // 故意に失敗させるテスト（GitHub Actionsなどでfail動作確認したいときに使う）
-        assertEquals(1, 2, "これは意図的に失敗するテストです");
-    }
 }
