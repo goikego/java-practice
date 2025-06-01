@@ -3,9 +3,15 @@ package com.keigo.practice.first;
 import com.keigo.practice.external.ExternalService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -26,6 +32,47 @@ public class CalculatorTest {
         externalService = mock(ExternalService.class);
         // モックを注入してCalculatorを作成
         calculator = new Calculator(externalService);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+     "サッカー, , これは秘密のサッカーだ",
+     " , 野球, これは秘密の野球だ"
+    })
+    void test_executeを呼んだ場合_パラメータに従って正常終了(String a, String b, String expected) throws IllegalAccessException {
+        // When
+        String actuall = calculator.execute(a, b);
+
+        // Then
+        assertEquals(expected, actuall, "メッセージが一致しない");
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "サッカー, 野球",
+            "abc ,wyz",
+            "1, 2",
+            "'', ''",
+            " , ",
+            "'', ",
+            " , ''",
+            "' ', ''",
+            "'', ' '",
+            "' ', ' '"
+    })
+    void test_executeを呼んだ場合_異常終了(String a, String b) {
+        // When & Then
+        assertThrows(NullPointerException.class, () ->calculator.execute(a, b));
+    }
+
+    @Test
+    void test_call_両方nullの場合は例外() throws Exception {
+        InvocationTargetException ex = assertThrows(InvocationTargetException.class, () -> {
+            Method method = Calculator.class.getDeclaredMethod("call", String.class, String.class);
+            method.setAccessible(true);
+            method.invoke(calculator, null, null);
+        });
+        assertTrue(ex.getCause() instanceof IllegalAccessException);        ;
     }
 
     @Test
